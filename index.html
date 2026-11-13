@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Restaurant Name — QR Food Ordering</title>
+  <style>
+    :root {
+      --bg: #111111;
+      --surface: #1b1b1b;
+      --surface-2: #242424;
+      --border: #2e2e2e;
+      --accent: #f59e0b;
+      --accent-hover: #fbbf24;
+      --text: #f5f5f5;
+      --muted: #a3a3a3;
+      --success: #22c55e;
+      --danger: #ef4444;
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.45;
+      padding-bottom: 100px;
+    }
+
+    .app-shell {
+      max-width: 680px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+
+    /* Header / Hero */
+    .hero {
+      padding: 20px 18px 16px;
+      text-align: center;
+      background: radial-gradient(circle at top, #271f10 0%, #111111 70%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .table-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 11px;
+      border-radius: 999px;
+    }
+
+    .qr-btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+
+    .logo-badge {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      border: 2.5px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--accent);
+      letter-spacing: 0.5px;
+      line-height: 1.15;
+    }
+
+    .restaurant-name {
+      font-size: 12px;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 900;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .hero p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* Sticky Search & Categories */
+    .controls {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(17, 17, 17, 0.94);
+      backdrop-filter: blur(10px);
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .search-box {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 14px 10px 36px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      flex: 0 0 auto;
+      background: var(--surface);
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: #111;
+      border-color: var(--accent);
+    }
+
+    /* Menu Sections */
+    .menu-container {
+      padding: 16px;
+    }
+
+    .category-section {
+      margin-bottom: 26px;
+    }
+
+    .category-header {
+      display: inline-block;
+      background: var(--accent);
+      color: #111;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 6px 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    @media (min-width: 540px) {
+      .menu-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .item-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: border-color 0.15s ease;
+    }
+
+    .item-card.in-cart {
+      border-color: rgba(245, 158, 11, 0.55);
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+    }
+
+    .item-emoji {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--surface-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .item-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .item-price {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    /* Add / Stepper buttons */
+    .add-btn {
+      background: var(--surface-2);
+      color: var(--accent);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: 0.15s ease;
+    }
+
+    .add-btn:hover {
+      background: var(--accent);
+      color: #111;
+    }
+
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      background: var(--accent);
+      color: #111;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .stepper button {
+      background: transparent;
+      border: none;
+      color: #111;
+      font-size: 16px;
+      font-weight: 900;
+      width: 30px;
+      height: 34px;
+      cursor: pointer;
+    }
+
+    .stepper span {
+      min-width: 22px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 20px 16px;
+      border-top: 2px solid var(--accent);
+      margin: 12px 16px 0;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    .footer-row {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    /* Floating Cart Bar */
+    .cart-bar-wrap {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 30;
+      padding: 12px 16px;
+      pointer-events: none;
+    }
+
+    .cart-bar {
+      max-width: 648px;
+      margin: 0 auto;
+      background: var(--accent);
+      color: #111;
+      border-radius: 14px;
+      padding: 13px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 800;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55);
+      cursor: pointer;
+      pointer-events: auto;
+      transform: translateY(130%);
+      transition: transform 0.25s ease;
+    }
+
+    .cart-bar.visible {
+      transform: translateY(0);
+    }
+
+    .cart-badge {
+      background: #111;
+      color: var(--accent);
+      padding: 3px 9px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-right: 8px;
+    }
+
+    /* Modal / Drawer */
+    .backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      z-index: 40;
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .backdrop.open {
+      display: flex;
+    }
+
+    .drawer {
+      background: var(--surface);
+      width: 100%;
+      max-width: 680px;
+      max-height: 88vh;
+      border-radius: 20px 20px 0 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .drawer-header {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drawer-header h2 {
+      font-size: 18px;
+    }
+
+    .close-btn {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .drawer-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .cart-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+
+    .notes-input {
+      width: 100%;
+      margin-top: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 13px;
+      resize: none;
+    }
+
+    .summary-box {
+      margin-top: 14px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 14px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      color: var(--muted);
+    }
+
+    .summary-line.total {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 800;
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+
+    .drawer-footer {
+      padding: 14px 18px;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+
+    .primary-btn {
+      width: 100%;
+      background: var(--accent);
+      color: #111;
+      border: none;
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 15px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .primary-btn:hover {
+      background: var(--accent-hover);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+    }
+
+    .order-success {
+      text-align: center;
+      padding: 24px 10px;
+    }
+
+    .check-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.15);
+      border: 2px solid var(--success);
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+      margin: 0 auto 14px;
+    }
+
+    .qr-box {
+      background: #fff;
+      padding: 16px;
+      border-radius: 14px;
+      display: inline-block;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Hero -->
+    <header class="hero">
+      <div class="top-bar">
+        <span class="table-pill" id="tableLabel">📱 Table #04 • QR Order</span>
+        <button class="qr-btn" onclick="openQrModal()">Table QR</button>
+      </div>
+      <div class="logo-badge">Your<br>Logo<br>Here</div>
+      <div class="restaurant-name">Restaurant Name</div>
+      <h1>FOOD MENU</h1>
+      <p>Select items below to send your order straight to the kitchen</p>
+    </header>
+
+    <!-- Sticky Search & Categories -->
+    <div class="controls">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search dishes, drinks, appetizers..." oninput="renderMenu()" />
+      </div>
+      <div class="tabs" id="categoryTabs">
+        <button class="tab-btn active" data-cat="All" onclick="setCategory('All')">All Items (30)</button>
+        <button class="tab-btn" data-cat="Main Course" onclick="setCategory('Main Course')">Main Course</button>
+        <button class="tab-btn" data-cat="Appetizers" onclick="setCategory('Appetizers')">Appetizers</button>
+        <button class="tab-btn" data-cat="Drinks" onclick="setCategory('Drinks')">Drinks</button>
+      </div>
+    </div>
+
+    <!-- Menu List -->
+    <main class="menu-container" id="menuContainer"></main>
+
+    <!-- Footer from original flyer -->
+    <footer class="footer">
+      <div class="footer-row">
+        <span>📞 +123456789987</span>
+        <span>🌐 www.website.com</span>
+      </div>
+      <div>📍 123 insert your address here</div>
+    </footer>
+  </div>
+
+  <!-- Floating Cart Bar -->
+  <div class="cart-bar-wrap">
+    <div class="cart-bar" id="cartBar" onclick="openCart()">
+      <div>
+        <span class="cart-badge" id="cartCount">0</span>
+        <span>View Order</span>
+      </div>
+      <div id="cartSubtotal">$0.00</div>
+    </div>
+  </div>
+
+  <!-- Cart Drawer -->
+  <div class="backdrop" id="cartBackdrop" onclick="closeOnBackdrop(event, 'cartBackdrop')">
+    <div class="drawer">
+      <div class="drawer-header">
+        <h2>Your Table Order</h2>
+        <button class="close-btn" onclick="closeCart()">✕</button>
+      </div>
+      <div class="drawer-body" id="cartBody"></div>
+      <div class="drawer-footer" id="cartFooter"></div>
+    </div>
+  </div>
+
+  <!-- QR Info Modal -->
+  <div class="backdrop" id="qrBackdrop" onclick="closeOnBackdrop(event, 'qrBackdrop')">
+    <div class="drawer" style="max-width: 420px; border-radius: 20px; margin: auto;">
+      <div class="drawer-header">
+        <h2>Table QR Code</h2>
+        <button class="close-btn" onclick="closeQrModal()">✕</button>
+      </div>
+      <div class="drawer-body" style="text-align:center;">
+        <p style="font-size:13px; color:var(--muted);">Switch table number to test multi-table QR links:</p>
+        <div style="margin: 12px 0;">
+          <select id="tableSelect" onchange="changeTable()" style="background:var(--bg);color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:8px;">
+            <option value="01">Table 01</option>
+            <option value="02">Table 02</option>
+            <option value="03">Table 03</option>
+            <option value="04" selected>Table 04</option>
+            <option value="05">Table 05</option>
+          </select>
+        </div>
+        <div class="qr-box">
+          <!-- Lightweight SVG QR placeholder pattern -->
+          <svg width="140" height="140" viewBox="0 0 21 21" shape-rendering="crispEdges">
+            <rect width="21" height="21" fill="#ffffff"/>
+            <path fill="#111111" d="M0,0h7v7h-7z M1,1v5h5v-5z M2,2h3v3h-3z M14,0h7v7h-7z M15,1v5h5v-5z M16,2h3v3h-3z M0,14h7v7h-7z M1,15v5h5v-5z M2,16h3v3h-3z M9,1h2v2h-2z M10,4h2v3h-2z M8,8h5v5h-5z M9,9v3h3v-3z M1,9h4v2h-4z M15,9h5v2h-5z M9,15h3v5h-3z M14,14h3v3h-3z M18,16h3v5h-3z"/>
+          </svg>
+        </div>
+        <p id="qrUrlText" style="font-size:12px; color:var(--accent); word-break:break-all;"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MENU_ITEMS = [
+      // MAIN COURSE
+      { id: "mc1", category: "Main Course", name: "Taco Trio", price: 10, emoji: "🌮" },
+      { id: "mc2", category: "Main Course", name: "BBQ Wings", price: 11, emoji: "🍗" },
+      { id: "mc3", category: "Main Course", name: "Veg Bowl", price: 12, emoji: "🥗" },
+      { id: "mc4", category: "Main Course", name: "Pasta Bake", price: 13, emoji: "🍝" },
+      { id: "mc5", category: "Main Course", name: "Sushi Roll", price: 14, emoji: "🍣" },
+      { id: "mc6", category: "Main Course", name: "Grill Wrap", price: 10, emoji: "🌯" },
+      { id: "mc7", category: "Main Course", name: "Miso Soup", price: 11, emoji: "🍜" },
+      { id: "mc8", category: "Main Course", name: "Steak Frites", price: 12, emoji: "🥩" },
+      { id: "mc9", category: "Main Course", name: "Choco Tart", price: 13, emoji: "🍫" },
+      { id: "mc10", category: "Main Course", name: "Crispy Tofu", price: 14, emoji: "🧈" },
+
+      // APPETIZERS
+      { id: "ap1", category: "Appetizers", name: "Nachos", price: 10, emoji: "🧀" },
+      { id: "ap2", category: "Appetizers", name: "Sliders", price: 11, emoji: "🍔" },
+      { id: "ap3", category: "Appetizers", name: "Wontons", price: 12, emoji: "🥟" },
+      { id: "ap4", category: "Appetizers", name: "Skewers", price: 13, emoji: "🍢" },
+      { id: "ap5", category: "Appetizers", name: "Hummus", price: 14, emoji: "🥣" },
+      { id: "ap6", category: "Appetizers", name: "Bruschetta", price: 10, emoji: "🥖" },
+      { id: "ap7", category: "Appetizers", name: "Dumplings", price: 11, emoji: "🥟" },
+      { id: "ap8", category: "Appetizers", name: "Fries", price: 12, emoji: "🍟" },
+      { id: "ap9", category: "Appetizers", name: "Wings", price: 13, emoji: "🍗" },
+      { id: "ap10", category: "Appetizers", name: "Meatballs", price: 14, emoji: "🧆" },
+
+      // DRINKS
+      { id: "dr1", category: "Drinks", name: "Mojito", price: 10, emoji: "🍹" },
+      { id: "dr2", category: "Drinks", name: "Lemonade", price: 11, emoji: "🍋" },
+      { id: "dr3", category: "Drinks", name: "Iced Tea", price: 12, emoji: "🧊" },
+      { id: "dr4", category: "Drinks", name: "Espresso", price: 13, emoji: "☕" },
+      { id: "dr5", category: "Drinks", name: "Smoothie", price: 14, emoji: "🥤" },
+      { id: "dr6", category: "Drinks", name: "Margarita", price: 10, emoji: "🍸" },
+      { id: "dr7", category: "Drinks", name: "Sangria", price: 11, emoji: "🍷" },
+      { id: "dr8", category: "Drinks", name: "Latte", price: 12, emoji: "🥛" },
+      { id: "dr9", category: "Drinks", name: "Mocktail", price: 13, emoji: "🍓" },
+      { id: "dr10", category: "Drinks", name: "Milkshake", price: 14, emoji: "🍨" }
+    ];
+
+    const CATEGORIES = ["Main Course", "Appetizers", "Drinks"];
+    let activeCategory = "All";
+    let cart = {}; // { id: qty }
+    let orderNotes = "";
+    let orderPlaced = false;
+
+    // Detect ?table=XX from QR link
+    const params = new URLSearchParams(window.location.search);
+    let tableNum = params.get("table") || "04";
+    document.getElementById("tableLabel").textContent = `📱 Table #${tableNum} • QR Order`;
+
+    function setCategory(cat) {
+      activeCategory = cat;
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.cat === cat);
+      });
+      renderMenu();
+    }
+
+    function updateQty(id, delta) {
+      orderPlaced = false;
+      const next = (cart[id] || 0) + delta;
+      if (next <= 0) {
+        delete cart[id];
+      } else {
+        cart[id] = next;
+      }
+      renderMenu();
+      updateCartBar();
+      if (document.getElementById("cartBackdrop").classList.contains("open")) {
+        renderCartModal();
+      }
+    }
+
+    function renderMenu() {
+      const query = document.getElementById("searchInput").value.trim().toLowerCase();
+      const container = document.getElementById("menuContainer");
+      const catsToRender = activeCategory === "All" ? CATEGORIES : [activeCategory];
+
+      let html = "";
+      let totalMatches = 0;
+
+      catsToRender.forEach(cat => {
+        const items = MENU_ITEMS.filter(item =>
+          item.category === cat && item.name.toLowerCase().includes(query)
+        );
+        if (!items.length) return;
+        totalMatches += items.length;
+
+        html += `
+          <section class="category-section">
+            <div class="category-header">${cat}</div>
+            <div class="menu-grid">
+              ${items.map(item => {
+                const qty = cart[item.id] || 0;
+                return `
+                  <div class="item-card ${qty > 0 ? "in-cart" : ""}">
+                    <div class="item-info">
+                      <div class="item-emoji">${item.emoji}</div>
+                      <div style="min-width:0;">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-price">$${item.price}</div>
+                      </div>
+                    </div>
+                    ${qty === 0
+                      ? `<button class="add-btn" onclick="updateQty('${item.id}', 1)">+ Add</button>`
+                      : `<div class="stepper">
+                           <button onclick="updateQty('${item.id}', -1)">−</button>
+                           <span>${qty}</span>
+                           <button onclick="updateQty('${item.id}', 1)">+</button>
+                         </div>`
+                    }
+                  </div>
+                `;
+              }).join("")}
+            </div>
+          </section>
+        `;
+      });
+
+      if (totalMatches === 0) {
+        html = `<div class="empty-state">No menu items matched "<strong>${query}</strong>".</div>`;
+      }
+
+      container.innerHTML = html;
+    }
+
+    function getCartStats() {
+      let count = 0;
+      let subtotal = 0;
+      const entries = [];
+      for (const [id, qty] of Object.entries(cart)) {
+        const item = MENU_ITEMS.find(i => i.id === id);
+        if (!item) continue;
+        count += qty;
+        subtotal += item.price * qty;
+        entries.push({ ...item, qty });
+      }
+      const tax = subtotal * 0.08;
+      const total = subtotal + tax;
+      return { count, subtotal, tax, total, entries };
+    }
+
+    function updateCartBar() {
+      const { count, subtotal } = getCartStats();
+      const bar = document.getElementById("cartBar");
+      document.getElementById("cartCount").textContent = count;
+      document.getElementById("cartSubtotal").textContent = `$${subtotal.toFixed(2)}`;
+      bar.classList.toggle("visible", count > 0);
+    }
+
+    function openCart() {
+      document.getElementById("cartBackdrop").classList.add("open");
+      renderCartModal();
+    }
+
+    function closeCart() {
+      document.getElementById("cartBackdrop").classList.remove("open");
+    }
+
+    function renderCartModal() {
+      const body = document.getElementById("cartBody");
+      const footer = document.getElementById("cartFooter");
+
+      if (orderPlaced) {
+        const ticket = Math.floor(1000 + Math.random() * 9000);
+        body.innerHTML = `
+          <div class="order-success">
+            <div class="check-circle">✓</div>
+            <h3>Order Sent to Kitchen!</h3>
+            <p style="color:var(--muted); font-size:14px; margin-top:6px;">
+              Ticket <strong>#${ticket}</strong> for <strong>Table #${tableNum}</strong>.<br>
+              Estimated prep time: 15–20 mins.
+            </p>
+          </div>
+        `;
+        footer.innerHTML = `<button class="primary-btn" onclick="resetAfterOrder()">Order More Items</button>`;
+        return;
+      }
+
+      const { entries, subtotal, tax, total } = getCartStats();
+      if (!entries.length) {
+        body.innerHTML = `<div class="empty-state">Your cart is empty. Add items from the menu!</div>`;
+        footer.innerHTML = "";
+        return;
+      }
+
+      body.innerHTML = `
+        ${entries.map(item => `
+          <div class="cart-row">
+            <div>
+              <div style="font-weight:700;">${item.emoji} ${item.name}</div>
+              <div style="font-size:12px; color:var(--muted);">$${item.price} each</div>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div class="stepper">
+                <button onclick="updateQty('${item.id}', -1)">−</button>
+                <span>${item.qty}</span>
+                <button onclick="updateQty('${item.id}', 1)">+</button>
+              </div>
+              <div style="min-width:48px; text-align:right; font-weight:700;">$${(item.price * item.qty).toFixed(2)}</div>
+            </div>
+          </div>
+        `).join("")}
+
+        <textarea class="notes-input" rows="2" placeholder="Kitchen notes (e.g., extra sauce, no onions, allergies)..."
+          oninput="orderNotes = this.value">${orderNotes}</textarea>
+
+        <div class="summary-box">
+          <div class="summary-line"><span>Subtotal</span><span>$${subtotal.toFixed(2)}</span></div>
+          <div class="summary-line"><span>Tax (8%)</span><span>$${tax.toFixed(2)}</span></div>
+          <div class="summary-line total"><span>Total</span><span>$${total.toFixed(2)}</span></div>
+        </div>
+      `;
+
+      footer.innerHTML = `
+        <button class="primary-btn" onclick="placeOrder()">
+          Place Order • $${total.toFixed(2)}
+        </button>
+      `;
+    }
+
+    function placeOrder() {
+      orderPlaced = true;
+      cart = {};
+      orderNotes = "";
+      renderMenu();
+      updateCartBar();
+      renderCartModal();
+    }
+
+    function resetAfterOrder() {
+      orderPlaced = false;
+      closeCart();
+    }
+
+    function openQrModal() {
+      document.getElementById("tableSelect").value = tableNum;
+      updateQrText();
+      document.getElementById("qrBackdrop").classList.add("open");
+    }
+
+    function closeQrModal() {
+      document.getElementById("qrBackdrop").classList.remove("open");
+    }
+
+    function changeTable() {
+      tableNum = document.getElementById("tableSelect").value;
+      document.getElementById("tableLabel").textContent = `📱 Table #${tableNum} • QR Order`;
+      updateQrText();
+    }
+
+    function updateQrText() {
+      const base = window.location.href.split("?")[0];
+      document.getElementById("qrUrlText").textContent = `${base}?table=${tableNum}`;
+    }
+
+    function closeOnBackdrop(e, id) {
+      if (e.target.id === id) {
+        document.getElementById(id).classList.remove("open");
+      }
+    }
+
+    // Initial render
+    renderMenu();
+    updateCartBar();
+  </script>
+</body>
+</html>
